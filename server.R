@@ -22,7 +22,7 @@
 			# }
 			validate(
 				need(input$basePSA >= 0.01 & input$basePSA <= 500, 'PSA must be between 0.01 and 500'),
-				need(input$age <= 80 & input$age >= 40, 'Age must be between 40 and 85'),
+				need(input$age <= 85 & input$age >= 40, 'Age must be between 40 and 85'),
 				need(input$glandvol >= 2 & input$glandvol <= 500, 'Gland Volume must be between 2 and 500'),
 				need(input$RecurEvent == FALSE | (input$RecurTime <= input$CurTime & input$RecurEvent == TRUE), 'Clinical failure time must be at or before current time')
 			)
