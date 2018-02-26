@@ -331,44 +331,70 @@
 			}
 		#2, recurred and alive; 1, recurred and died; 4, died without recurrence; 3, alive without recurrence
 
-  					cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  			cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 			if(input$plottype=='S'){
 				SUBSET = which(times>=input$CurTime)
 				#par(mar = c(5,5,5,6), xpd = TRUE)
 				plot(c(),c(), main = paste0('State Occupancy Probabilities'), ylim = c(0,1), xlim = c(0,max(times)), 
 					xlab = 'Years from Baseline', 
-					ylab = 'Proportion of Subjects in Group')
+					ylab = 'Proportion of Subjects in Group', cex.main = 1.5, cex.lab = 1.2)
 				
 				lower = rep(0,length(SUBSET))
 				upper = Prob1Save[SUBSET]
-				lines(times[SUBSET], upper  , lwd = 3)
-				polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[5])		
-				
+				lines(times[SUBSET], upper  , lwd = 3)		
+				if(input$BW == TRUE){
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), density = 25, angle = 0)		
+				}else{
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[5])
+				}
 				lower = upper
 				upper = lower + Prob4Save[SUBSET]
 				lines(times[SUBSET], upper  , lwd = 3)
-				polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[4])
-					
+				if(input$BW == TRUE){
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = 'gray')
+				}else{
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[4])
+				}
 				lower = upper
 				upper = lower + Prob2Save[SUBSET]
 				lines(times[SUBSET], upper  , lwd = 3)
-				polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[8])
-				
+				if(input$BW == TRUE){
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), density = 25, angle = 45)
+				}else{
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[8])
+				}
 				lower = upper
 				#upper = lower + Prob3Save[SUBSET]
 				upper = rep(1,length(SUBSET))
 				lines(times[SUBSET], upper  , lwd = 3)
-				polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[3])
+				if(input$BW == TRUE){
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = 'white')
+				}else{
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[3])
+				}
 				if(input$CurTime>0){abline(v=min(times[SUBSET]), lwd = 3)}
 				if(input$plotNums == FALSE){
-				legend(x='topleft', legend = c('Died after CF', 'Died before CF', 'Alive after CF', 'Alive before CF'), 
-						fill = cbPalette[c(5,4,8,3)])#,bty = 'n')
+					if(input$BW == FALSE){
+						legend(x='topleft', legend = c('Died with prior CF', 'Died without prior CF', 'Alive with prior CF', 'Alive without prior CF'), 
+						fill = cbPalette[c(5,4,8,3)], cex = 1.2)
+					}else{
+						legend(x='topleft', legend = c('Died with prior CF', 'Died without prior CF', 'Alive with prior CF', 'Alive without prior CF'), 
+						fill = c('black', 'gray', 'black', 'white'), density = c(25,NA,25,NA), angle = c(0,NA,45,NA),cex = 1.2)
+					}
 				}else{
 					LAST = length(times)
 					VALS = formatC( round(c(Prob1Save[LAST],Prob4Save[LAST],Prob2Save[LAST], Prob3Save[LAST]),3), format='f', digits=3 )
-				legend(x='topleft', legend = c(paste('Died after CF,   Prop. = ',VALS[1]), paste('Died before CF,   Prop. = ',VALS[2]), 
-						paste('Alive after CF,   Prop. = ',VALS[3]), paste( 'Alive before CF,   Prop. = ', VALS[4])),
-						fill = cbPalette[c(5,4,8,3)])#,bty = 'n')	
+					if(input$BW == FALSE){					
+						legend(x='topleft', legend = c(paste('Died with prior CF,   Prop. = ',VALS[1]), 
+						paste('Died without prior CF,   Prop. = ',VALS[2]), 
+						paste('Alive with prior CF,   Prop. = ',VALS[3]), paste( 'Alive without prior CF,   Prop. = ', VALS[4])),
+						fill = cbPalette[c(5,4,8,3)], cex = 1.2)
+					}else{
+						legend(x='topleft', legend = c(paste('Died with prior CF,   Prop. = ',VALS[1]), 
+						paste('Died without prior CF,   Prop. = ',VALS[2]), 
+						paste('Alive with prior CF,   Prop. = ',VALS[3]), paste( 'Alive without prior CF,   Prop. = ', VALS[4])),
+						fill = c('black', 'gray', 'black', 'white'), density = c(25,NA,25,NA), angle = c(0,NA,45,NA), cex = 1.2)						
+					}
 					points(rep(input$maxtime,4), y = cumsum(VALS), pch = 16, col = 'black') 
 				}
 				axis(side = 4)
@@ -377,69 +403,119 @@
 				#par(mar = c(5,5,5,6), xpd = TRUE)
 				plot(c(),c(), main = paste0('Overall Survival Probability'), ylim = c(0,1), xlim = c(0,max(times)), 
 					xlab = 'Years from Baseline', 
-					ylab = 'Survival Probability')
+					ylab = 'Survival Probability', cex.main = 1.5, cex.lab = 1.2)
 				
 				lower = rep(0,length(SUBSET))
 				upper = Prob2Save[SUBSET] + Prob3Save[SUBSET]
 				lines(times[SUBSET], upper  , lwd = 3)
-				polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[5])		
-				
+				if(input$BW == FALSE){
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[5])		
+				}else{
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = 'gray')
+				}
 				lower = upper
 				#upper = lower + Prob1Save[SUBSET] + Prob4Save[SUBSET]
 				upper = rep(1,length(SUBSET))
 				lines(times[SUBSET], upper  , lwd = 3)
-				polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[3])
+				if(input$BW == FALSE){
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[3])
+				}else{
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = 'white')
+				}
 				if(input$CurTime>0){abline(v=min(times[SUBSET]), lwd = 3)}
 	
 				legend(x='bottomleft', legend = c('Alive', 'Died'), 
 						fill = cbPalette[c(5,3)])#,bty = 'n')
 						
 				if(input$plotNums == FALSE){
+					if(input$BW == FALSE){
 					legend(x='bottomleft', legend = c('Alive', 'Died'), 
-						fill = cbPalette[c(5,3)])#,bty = 'n')
+						fill = cbPalette[c(5,3)], cex = 1.2)#,bty = 'n')
+					}else{
+						legend(x='bottomleft', legend = c('Alive', 'Died'), 
+						fill = c('gray', 'white'), cex = 1.2)#,bty = 'n')
+					}
 				}else{
 					LAST = length(times)
 					VALS = formatC(round(c(Prob2Save[LAST]+Prob3Save[LAST], Prob1Save[LAST]+Prob4Save[LAST]),3), format='f', digits=3 )
-					
+					if(input$BW == FALSE){
 					legend(x='bottomleft', legend = c(paste('Alive,   Prop. = ',VALS[1]), paste('Died,   Prop. = ', VALS[2])), 
-						fill = cbPalette[c(5,3)])#,bty = 'n')
+						fill = cbPalette[c(5,3)], cex = 1.2)
+					}else{
+						legend(x='bottomleft', legend = c(paste('Alive,   Prop. = ',VALS[1]), paste('Died,   Prop. = ', VALS[2])), 
+						fill = c('gray', 'white'), cex = 1.2)
+					}
 					points(input$maxtime, y = VALS[1], pch = 16, col = 'black') 	
 				}
 				axis(side = 4)
-			}else{
+			}else if(input$plottype == 'EF'){
 				SUBSET = which(times>=input$CurTime)
 				#par(mar = c(5,5,5,6), xpd = TRUE)
 				plot(c(),c(), main = paste0('Metastatic-Free Survival Probability'), ylim = c(0,1), xlim = c(0,max(times)), 
 					xlab = 'Years from Baseline', 
-					ylab = 'Metastatic-Free Survival Probability')
+					ylab = 'Metastatic-Free Survival Probability', cex.main = 1.5, cex.lab = 1.2)
 				
 				lower = rep(0,length(SUBSET))
 				upper = Prob3Save[SUBSET]
 				lines(times[SUBSET], upper  , lwd = 3)
-				polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[5])		
-				
+				if(input$BW == FALSE){
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[5])		
+				}else{
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = 'gray')
+				}
 				lower = upper
 				#upper = lower + Prob1Save[SUBSET] + Prob4Save[SUBSET] + Prob2Save[SUBSET] 
 				upper = rep(1,length(SUBSET))
 				lines(times[SUBSET], upper  , lwd = 3)
-				polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[3])
+				if(input$BW == FALSE){
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = cbPalette[3])
+				}else{
+					polygon(c(times[SUBSET],rev(times[SUBSET])), c(upper, rev(lower)), col = 'white')
+				}
 				if(input$CurTime>0){abline(v=min(times[SUBSET]), lwd = 3)}
-	
-				legend(x='bottomleft', legend = c('Alive without CF', 'Died and/or CF'), 
-						fill = cbPalette[c(5,3)])#,bty = 'n')
-						
+
 				if(input$plotNums == FALSE){
-					legend(x='bottomleft', legend = c('Alive without CF', 'Died and/or CF'), 
-						fill = cbPalette[c(5,3)])#,bty = 'n')
+					if(input$BW == FALSE){
+					legend(x='bottomleft', legend = c('Alive without prior CF', 'Died and/or CF'), 
+						fill = cbPalette[c(5,3)], cex = 1.2)#,bty = 'n')
+					}else{
+						legend(x='bottomleft', legend = c('Alive without prior CF', 'Died and/or CF'), 
+						fill =  c('gray', 'white'), cex = 1.2)#,bty = 'n')
+					}
 				}else{
 					LAST = length(times)
 					VALS = formatC(round(c(Prob3Save[LAST], Prob1Save[LAST]+Prob4Save[LAST]+Prob2Save[LAST]),3), format='f', digits=3 )
-					
-					legend(x='bottomleft', legend = c(paste('Alive without CF,   Prop. = ',VALS[1]), paste('Died and/or CF,   Prop. = ', VALS[2])), 
-						fill = cbPalette[c(5,3)])#,bty = 'n')
-					points(input$maxtime, y = VALS[1], pch = 16, col = 'black') 	
+					if(input$BW == FALSE){
+					legend(x='bottomleft', legend = c(paste('Alive without prior CF,   Prop. = ',VALS[1]), 
+						paste('Died and/or CF,   Prop. = ', VALS[2])), 
+						fill = cbPalette[c(5,3)], cex = 1.2)#,bty = 'n')						
+					}else{
+					legend(x='bottomleft', legend = c(paste('Alive without prior CF,   Prop. = ',VALS[1]), 
+						paste('Died and/or CF,   Prop. = ', VALS[2])), 
+						fill = c('gray', 'white'), cex = 1.2)#,bty = 'n')						
+					}
+					points(input$maxtime, y = VALS[1], pch = 16, col = 'black') 
 				}		
 				axis(side = 4)	
+			}else{
+				SUBSET = which(times>=input$CurTime)
+				
+				x = data.frame(x1 = Prob2Save[times == input$maxtime], x2 =(Prob1Save[times == input$maxtime] + Prob4Save[times == input$maxtime]), 
+					x3 = Prob3Save[times == input$maxtime])
+				
+				p = ggtern::ggtern(data=x,ggtern::aes(x=x1,y=x2,z=x3)) + 
+			  ggplot2::geom_point(fill="black",shape=21,size=4) + 
+			ggtern::theme_custom(base_size = 16, base_family = "",
+			  tern.panel.background = 'white',
+			  col.T = ifelse(input$BW == FALSE,"blue", 'black'), col.L = ifelse(input$BW == FALSE,"darkgreen", 'black'), col.R = ifelse(input$BW == FALSE,"purple", 'black'))+
+			  ggplot2::labs(title="Ternary Plot for State Occupancy Probabilities")+
+			 ggtern:: theme_showarrows()+  
+			  ggtern::Llab(label = '',labelarrow = 'Alive with prior CF') + 
+			  ggtern::Rlab(label = '', labelarrow = 'Alive without prior CF') + 
+			  ggtern::Tlab(label = '', labelarrow = 'Died')+
+			  ggplot2::theme(axis.text=ggplot2::element_text(size=16),
+			        axis.title=ggplot2::element_text(size=18,face="bold"))
+			  	print(p)	
 			}		
 			# if(input$SavePlot == TRUE){
 				# grDevices::dev.print(pdf, paste(plotname, '.pdf', sep = ''))

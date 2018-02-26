@@ -23,16 +23,18 @@
 			shiny::selectInput("plottype", "Plot Type:",
                 c("State Occupancy Probabilities" = "S",
                   "Overall Survival Probability" = "OS",
-                  "Metastatic-Free Survival Probability" = "EF")),
+                  "Metastatic-Free Survival Probability" = "EF", 
+                  'State Occupancy Ternary Plot' = 'TP')),
             
             shiny::sliderInput('maxtime', "Years from baseline to plot (up to 15): ",  min = 1, max = 15, value = 10),
-            shiny::checkboxInput("plotNums", label = "Show Probabilities", value = FALSE) ,
+            shiny::conditionalPanel(condition="input.plottype !='TP'", 
+            	shiny::checkboxInput("plotNums", label = "Show Probabilities", value = FALSE)) ,
             	shiny::conditionalPanel(condition="input.plottype !='HAZ'",
                 shiny::sliderInput('CurTime', "Patient known to be alive at time (years): ", value = 0, min = 0, max = 15) ,
 				shiny::checkboxInput("RecurEvent", label = "Patient had observed clinical failure", value = FALSE) ),
 	   		shiny::conditionalPanel(condition="input.RecurEvent==true",
-                shiny::sliderInput('RecurTime', "When did the clinical failure occur (years)?: ", min = 0, max=15, value = 0) )
-               
+                shiny::sliderInput('RecurTime', "When did the clinical failure occur (years)?: ", min = 0, max=15, value = 0) ),
+            shiny::checkboxInput("BW", label = "Plot in Black and White", value = FALSE)
             ),
             column(3,
             shiny::selectInput("tx", "Treatment:", c("Surgery", "Radiation")),
